@@ -404,7 +404,7 @@ class Decimal implements DecimalInterface
 
     public function negate(): DecimalInterface
     {
-        return $this->inverse();
+        return $this->absolutize()->inverse();
     }
 
     public function absolutize(): DecimalInterface
