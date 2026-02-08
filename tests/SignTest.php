@@ -2,7 +2,7 @@
 
 use AndKom\Decimal;
 
-class NegateTest extends \PHPUnit\Framework\TestCase
+class SignTest extends \PHPUnit\Framework\TestCase
 {
     public function testNegatePositive()
     {
@@ -37,5 +37,14 @@ class NegateTest extends \PHPUnit\Framework\TestCase
         $this->assertSame((new Decimal('0'))->inverse()->getValue(), '0');
         $this->assertSame((new Decimal('1.50', 2))->inverse()->getValue(), '-1.50');
         $this->assertSame((new Decimal('-1.50', 2))->inverse()->getValue(), '1.50');
+    }
+
+    public function testAbsolutize()
+    {
+        $this->assertSame((new Decimal('1'))->absolutize()->getValue(), '1');
+        $this->assertSame((new Decimal('-1'))->absolutize()->getValue(), '1');
+        $this->assertSame((new Decimal('0'))->absolutize()->getValue(), '0');
+        $this->assertSame((new Decimal('-1.50', 2))->absolutize()->getValue(), '1.50');
+        $this->assertSame((new Decimal('1.50', 2))->absolutize()->getValue(), '1.50');
     }
 }
