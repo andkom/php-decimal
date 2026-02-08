@@ -400,7 +400,45 @@ class Decimal implements DecimalInterface
 
     public function toDigits(int $digits): DecimalInterface
     {
-        return $this;// TODO: Implement toDigits() method.
+        if ($digits < 1) {
+            throw new \InvalidArgumentException('Digits must be at least 1.');
+        }
+
+        if ($this->isZero()) {
+            return $this->mutate();
+        }
+
+        $absValue = ltrim($this->value, '-');
+        $parts = explode('.', $absValue);
+        $intPart = $parts[0];
+
+        if ($intPart !== '0') {
+            $precision = $digits - strlen($intPart);
+        } else {
+            $fracPart = isset($parts[1]) ? $parts[1] : '';
+            $leadingZeros = strlen($fracPart) - strlen(ltrim($fracPart, '0'));
+            $precision = $leadingZeros + $digits;
+        }
+
+        // For non-positive precision, delegate to round (works correctly for these cases)
+        if ($precision <= 0) {
+            return $this->round($precision, self::ROUND_HALF_UP);
+        }
+
+        // More digits requested than available, pad with zeros
+        if ($precision > $this->scale) {
+            return $this->mutate()->setScale($precision);
+        }
+
+        // Round half-up to $precision decimal places
+        $half = '0.' . str_repeat('0', $precision) . '5';
+        if ($this->isNegative()) {
+            $rounded = bcsub($this->value, $half, $precision);
+        } else {
+            $rounded = bcadd($this->value, $half, $precision);
+        }
+
+        return $this->mutate()->setScale($precision)->setValue($rounded);
     }
 
     public function toScientific(int $precision = 5, string $exponent = 'E'): string
