@@ -2,7 +2,7 @@
 
 use AndKom\Decimal;
 
-class ScientificTest extends \PHPUnit\Framework\TestCase
+class ToScientificTest extends \PHPUnit\Framework\TestCase
 {
     public function testToScientific()
     {

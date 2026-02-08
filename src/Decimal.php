@@ -541,7 +541,7 @@ class Decimal implements DecimalInterface
 
     public function toFixed(int $precision = 0): string
     {
-        return $this->setScale($precision)->getValue();
+        return $this->toDecimal()->setScale($precision)->getValue();
     }
 
     public function compareTo($arg, int $scale = null): int
