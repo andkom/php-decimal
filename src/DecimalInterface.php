@@ -96,7 +96,7 @@ interface DecimalInterface
 
     public function toScientific(int $precision = 5, string $exponent = 'E'): string;
 
-    public function toFormat(int $precision = 0, string $decPoint = '.', string $thousandsSep = ',', bool $trailingZeros = true, int $mode = self::ROUND_HALF_UP): string;
+    public function toFormat(int $precision = 0, string $decPoint = '.', string $thousandsSep = ',', bool $trailingZeros = false, int $mode = self::ROUND_HALF_UP): string;
 
     public function toFixed(int $precision = 0): string;
 
