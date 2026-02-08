@@ -513,11 +513,11 @@ class Decimal implements DecimalInterface
         $base = bcpow(10, abs($power));
 
         if ($power > 0) {
-            $number = bcdiv($this->value, $base, $this->scale);
+            $number = bcdiv($this->value, $base, $precision);
         } elseif ($power < 0) {
-            $number = bcmul($this->value, $base, $this->scale);
+            $number = bcmul($this->value, $base, $precision);
         } else {
-            $number = $this->value;
+            $number = bcadd($this->value, '0', $precision);
         }
 
         // Strip trailing zeros after decimal point
