@@ -234,7 +234,16 @@ class Decimal implements DecimalInterface
 
     public function power($value, $scale = null): DecimalInterface
     {
-        return $this->operator('pow', $value, $scale);
+        $exp = (int)static::create($value)->getValue();
+        $newScale = $scale ?? $this->scale;
+
+        if ($exp >= 0) {
+            $newValue = bcpow($this->value, (string)$exp, $newScale);
+        } else {
+            $newValue = bcdiv('1', bcpow($this->value, (string)(-$exp), $newScale), $newScale);
+        }
+
+        return $this->mutate()->setScale($newScale)->setValue($newValue);
     }
 
     public function squareRoot($value, $scale = null): DecimalInterface
