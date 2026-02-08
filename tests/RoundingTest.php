@@ -49,6 +49,13 @@ class RoundingTest extends \PHPUnit\Framework\TestCase
         $this->assertSame((new Decimal('-1.1', 1))->truncate(1)->getValue(), '-1.1');
         $this->assertSame((new Decimal('-1.1', 1))->truncate()->getValue(), '-1');
         $this->assertSame((new Decimal('-123'))->truncate(-2)->getValue(), '-100');
+
+        // positive precision > 1
+        $this->assertSame((new Decimal('1.789', 3))->truncate(2)->getValue(), '1.78');
+        $this->assertSame((new Decimal('1.789', 3))->truncate(3)->getValue(), '1.789');
+        $this->assertSame((new Decimal('123.456789', 6))->truncate(2)->getValue(), '123.45');
+        $this->assertSame((new Decimal('123.456789', 6))->truncate(4)->getValue(), '123.4567');
+        $this->assertSame((new Decimal('-9.876', 3))->truncate(2)->getValue(), '-9.87');
     }
 
     public function testRoundUp()

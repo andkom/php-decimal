@@ -228,12 +228,9 @@ class Decimal implements DecimalInterface
 
     public function truncate(int $precision = 0): DecimalInterface
     {
-        if ($precision == 0) {
-            return $this->mutate()->setScale(0);
-        } elseif ($precision > 0) {
-            $base = bcpow(10, $precision - 1);
-            return $this->multiply($base, $precision);
-        } elseif ($precision < 0) {
+        if ($precision >= 0) {
+            return $this->mutate()->setScale($precision);
+        } else {
             $base = bcpow(10, -$precision);
             return $this->divide($base, 0)->multiply($base);
         }
