@@ -246,9 +246,12 @@ class Decimal implements DecimalInterface
         return $this->mutate()->setScale($newScale)->setValue($newValue);
     }
 
-    public function squareRoot($value, $scale = null): DecimalInterface
+    public function squareRoot($scale = null): DecimalInterface
     {
-        return $this->operator('sqrt', $value, $scale);
+        $newScale = $scale ?? $this->scale;
+        $newValue = bcsqrt($this->value, $newScale);
+
+        return $this->mutate()->setScale($newScale)->setValue($newValue);
     }
 
     public function round(int $precision = 0, int $mode = self::ROUND_HALF_UP): DecimalInterface

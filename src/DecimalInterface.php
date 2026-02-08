@@ -52,7 +52,7 @@ interface DecimalInterface
 
     public function power($value, $scale = null): self;
 
-    public function squareRoot($value, $scale = null): self;
+    public function squareRoot($scale = null): self;
 
     public function truncate(int $precision = 0): self;
 

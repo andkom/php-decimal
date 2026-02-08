@@ -77,4 +77,15 @@ class OperatorsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame((new Decimal(2))->power(-2, 2)->getValue(), '0.25');
         $this->assertSame((new Decimal(2))->power(-1, 1)->getValue(), '0.5');
     }
+
+    public function testSquareRoot()
+    {
+        $this->assertSame((new Decimal('0'))->squareRoot()->getValue(), '0');
+        $this->assertSame((new Decimal('1'))->squareRoot()->getValue(), '1');
+        $this->assertSame((new Decimal('4'))->squareRoot()->getValue(), '2');
+        $this->assertSame((new Decimal('9'))->squareRoot()->getValue(), '3');
+        $this->assertSame((new Decimal('2'))->squareRoot(4)->getValue(), '1.4142');
+        $this->assertSame((new Decimal('100'))->squareRoot()->getValue(), '10');
+        $this->assertSame((new Decimal('2.25', 2))->squareRoot()->getValue(), '1.50');
+    }
 }
