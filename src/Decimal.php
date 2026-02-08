@@ -120,6 +120,14 @@ class Decimal implements DecimalInterface
         return $this;
     }
 
+    private static function incrementAtPrecision(int $precision): string
+    {
+        if ($precision <= 0) {
+            return bcpow('10', (string)(-$precision));
+        }
+        return '0.' . str_repeat('0', $precision - 1) . '1';
+    }
+
     protected function operator(string $operator, $value, int $scale = null): DecimalInterface
     {
         $function = 'bc' . $operator;
@@ -236,41 +244,18 @@ class Decimal implements DecimalInterface
         }
     }
 
-    /**
-     * 1 (-1) => 0
-     *
-     * 1.0 => 1
-     * 1.1 => 2
-     *
-     * 1.00 => 1.0
-     * 1.01 => 1.1
-     *
-     * 120 => 120
-     * 123 => 130
-     *
-     * 100 => 100
-     * 123 => 200
-     *
-     * @param int $precision
-     * @return DecimalInterface
-     */
     public function roundUp(int $precision = 0): DecimalInterface
     {
         $original = $this->toDecimal();
         $truncated = $this->truncate($precision);
 
-        if ($truncated->isZero()) return $truncated;
+        if ($precision > $original->getScale()) {
+            return $truncated;
+        }
 
-        $diff = $original->subtract($truncated);
-
-        if ($diff->isGreaterThan(0)) {
-            $increment = bcpow(10, -$precision, $original->getScale());
-
-            if ($truncated->isPositive()) {
-                $truncated->add($increment);
-            } else {
-                $truncated->subtract($increment);
-            }
+        if ($original->isGreaterThan($truncated)) {
+            $increment = self::incrementAtPrecision($precision);
+            $truncated = $truncated->add($increment);
         }
 
         return $truncated;
@@ -284,19 +269,23 @@ class Decimal implements DecimalInterface
     public function roundHalfUp(int $precision = 0): DecimalInterface
     {
         $original = $this->toDecimal();
+        $isNegative = $this->isNegative();
         $truncated = $this->truncate($precision);
+        $originalScale = $original->getScale();
 
-        if ($truncated->isZero()) return $truncated;
+        if ($precision > $originalScale) {
+            return $truncated;
+        }
 
-        $increment = bcpow(10, -$precision, $original->getScale());
-        $compare = bcmul($increment, '0.5', $original->getScale() + 1);
-        $diff = $original->subtract($truncated);
+        $increment = self::incrementAtPrecision($precision);
+        $compare = bcmul($increment, '0.5', $originalScale + 1);
+        $absDiff = $original->subtract($truncated)->absolutize();
 
-        if ($diff->isGreaterThanOrEquals($compare, $original->getScale() + 1)) {
-            if ($truncated->isPositive()) {
-                $truncated->add($increment);
+        if ($absDiff->isGreaterThanOrEquals($compare, $originalScale + 1)) {
+            if ($isNegative) {
+                $truncated = $truncated->subtract($increment);
             } else {
-                $truncated->subtract($increment);
+                $truncated = $truncated->add($increment);
             }
         }
 
@@ -305,25 +294,65 @@ class Decimal implements DecimalInterface
 
     public function roundHalfDown(int $precision = 0): DecimalInterface
     {
-        return $this->roundDown($precision);
+        $original = $this->toDecimal();
+        $isNegative = $this->isNegative();
+        $truncated = $this->truncate($precision);
+        $originalScale = $original->getScale();
+
+        if ($precision > $originalScale) {
+            return $truncated;
+        }
+
+        $increment = self::incrementAtPrecision($precision);
+        $compare = bcmul($increment, '0.5', $originalScale + 1);
+        $absDiff = $original->subtract($truncated)->absolutize();
+
+        if ($absDiff->isGreaterThan($compare, $originalScale + 1)) {
+            if ($isNegative) {
+                $truncated = $truncated->subtract($increment);
+            } else {
+                $truncated = $truncated->add($increment);
+            }
+        }
+
+        return $truncated;
     }
 
     public function roundHalfEven(int $precision = 0): DecimalInterface
     {
         $original = $this->toDecimal();
+        $isNegative = $this->isNegative();
         $truncated = $this->truncate($precision);
+        $originalScale = $original->getScale();
 
-        if ($truncated->isZero()) return $truncated;
+        if ($precision > $originalScale) {
+            return $truncated;
+        }
 
-        $increment = bcpow(10, -$precision, $original->getScale());
-        $compare = bcmul($increment, '0.5', $original->getScale() + 1);
-        $diff = $original->subtract($truncated);
+        $increment = self::incrementAtPrecision($precision);
+        $compare = bcmul($increment, '0.5', $originalScale + 1);
+        $absDiff = $original->subtract($truncated)->absolutize();
 
-        if ($diff->isEqual($compare, $original->getScale() + 1)) {
-            if ($truncated->modulus(2)->isNotZero()) {
-                $truncated->add(1);
+        $cmp = $absDiff->compareTo($compare, $originalScale + 1);
+
+        if ($cmp > 0) {
+            if ($isNegative) {
+                $truncated = $truncated->subtract($increment);
             } else {
-                //$truncated->subtract(1);
+                $truncated = $truncated->add($increment);
+            }
+        } elseif ($cmp == 0) {
+            if ($precision > 0) {
+                $digitValue = $truncated->toDecimal()->multiply(bcpow('10', (string)$precision), 0);
+            } else {
+                $digitValue = $truncated->toDecimal()->divide($increment, 0);
+            }
+            if ($digitValue->modulus(2)->isNotZero()) {
+                if ($isNegative) {
+                    $truncated = $truncated->subtract($increment);
+                } else {
+                    $truncated = $truncated->add($increment);
+                }
             }
         }
 
@@ -332,11 +361,56 @@ class Decimal implements DecimalInterface
 
     public function roundHalfOdd(int $precision = 0): DecimalInterface
     {
+        $original = $this->toDecimal();
+        $isNegative = $this->isNegative();
+        $truncated = $this->truncate($precision);
+        $originalScale = $original->getScale();
+
+        if ($precision > $originalScale) {
+            return $truncated;
+        }
+
+        $increment = self::incrementAtPrecision($precision);
+        $compare = bcmul($increment, '0.5', $originalScale + 1);
+        $absDiff = $original->subtract($truncated)->absolutize();
+
+        $cmp = $absDiff->compareTo($compare, $originalScale + 1);
+
+        if ($cmp > 0) {
+            if ($isNegative) {
+                $truncated = $truncated->subtract($increment);
+            } else {
+                $truncated = $truncated->add($increment);
+            }
+        } elseif ($cmp == 0) {
+            if ($precision > 0) {
+                $digitValue = $truncated->toDecimal()->multiply(bcpow('10', (string)$precision), 0);
+            } else {
+                $digitValue = $truncated->toDecimal()->divide($increment, 0);
+            }
+            if ($digitValue->modulus(2)->isZero()) {
+                if ($isNegative) {
+                    $truncated = $truncated->subtract($increment);
+                } else {
+                    $truncated = $truncated->add($increment);
+                }
+            }
+        }
+
+        return $truncated;
     }
 
     public function floor(int $precision = 0): DecimalInterface
     {
-        return $this->roundDown($precision);
+        $original = $this->toDecimal();
+        $truncated = $this->truncate($precision);
+
+        if ($original->isLessThan($truncated)) {
+            $increment = self::incrementAtPrecision($precision);
+            $truncated = $truncated->subtract($increment);
+        }
+
+        return $truncated;
     }
 
     public function ceil(int $precision = 0): DecimalInterface
