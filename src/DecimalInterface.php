@@ -56,7 +56,7 @@ interface DecimalInterface
 
     public function truncate(int $precision = 0): self;
 
-    public function round(int $precision = 0, int $mode = self::ROUND_UP): self;
+    public function round(int $precision = 0, int $mode = self::ROUND_HALF_UP): self;
 
     public function roundUp(int $precision = 0): self;
 
@@ -96,7 +96,7 @@ interface DecimalInterface
 
     public function toScientific(int $precision = 5, string $exponent = 'E'): string;
 
-    public function toFormat(int $precision = 0, string $decPoint = '.', string $thousandsSep = ',', bool $trailingZeros = true, int $mode = PHP_ROUND_HALF_UP): string;
+    public function toFormat(int $precision = 0, string $decPoint = '.', string $thousandsSep = ',', bool $trailingZeros = true, int $mode = self::ROUND_HALF_UP): string;
 
     public function toFixed(int $precision = 0): string;
 

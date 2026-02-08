@@ -36,7 +36,7 @@ class Decimal implements DecimalInterface
         } elseif ($value instanceof static) {
             return static::createFromDecimal($value, $scale);
         } else {
-            return static::createFromString((string)$value);
+            return static::createFromString((string)$value, $scale);
         }
     }
 
@@ -101,7 +101,7 @@ class Decimal implements DecimalInterface
 
     public static function createFromDecimal(DecimalInterface $decimal, int $scale = null): DecimalInterface
     {
-        return new static($decimal->getValue(), $scale ?: $decimal->getScale());
+        return new static($decimal->getValue(), $scale ?? $decimal->getScale());
     }
 
     public static function max(...$args): DecimalInterface
@@ -201,7 +201,7 @@ class Decimal implements DecimalInterface
             throw new \InvalidArgumentException('Scale must be positive.');
         }
 
-        $this->scale = $scale ?: static::$defaultScale ?: 0;
+        $this->scale = $scale ?? static::$defaultScale ?? 0;
         $this->value = bcadd($this->value, 0, $this->scale);
         return $this;
     }
@@ -522,7 +522,7 @@ class Decimal implements DecimalInterface
         return $number . $exponent . $power;
     }
 
-    public function toFormat(int $precision = 0, string $decPoint = '.', string $thousandsSep = ',', bool $trailingZeros = false, int $mode = PHP_ROUND_HALF_UP): string
+    public function toFormat(int $precision = 0, string $decPoint = '.', string $thousandsSep = ',', bool $trailingZeros = false, int $mode = self::ROUND_HALF_UP): string
     {
         $rounded = $this->round($precision, $mode)->toString($trailingZeros);
         $parts = explode('.', $rounded);
@@ -594,7 +594,7 @@ class Decimal implements DecimalInterface
 
     public function isPositive(): bool
     {
-        return $this->isGreaterThanOrEquals(0);
+        return $this->isGreaterThan(0);
     }
 
     public function isZero(): bool
