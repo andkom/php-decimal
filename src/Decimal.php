@@ -406,34 +406,47 @@ class Decimal implements DecimalInterface
     public function toScientific(int $precision = 5, string $exponent = 'E'): string
     {
         $value = ltrim($this->value, '-');
+        $isNegative = $this->isNegative();
 
         $dotPos = strpos($value, '.');
         if ($dotPos === false) {
             $dotPos = strlen($value);
-        } else {
-            $dotPos++;
         }
 
         $digitPos = false;
 
         for ($i = 0; $i < strlen($value); $i++) {
-            if ($value[$i] >= 1 && $value[$i] <= 9) {
+            if ($value[$i] >= '1' && $value[$i] <= '9') {
                 $digitPos = $i;
                 break;
             }
         }
 
-        if ($digitPos === false) $digitPos = 0;
+        if ($digitPos === false) {
+            return ($isNegative ? '-' : '') . '0' . $exponent . '0';
+        }
 
-        $power = $dotPos - $digitPos - 1;
+        // Calculate power: digits before dot contribute positively, after dot negatively
+        if ($digitPos < $dotPos) {
+            $power = $dotPos - $digitPos - 1;
+        } else {
+            // digitPos is after the dot; adjust for the dot character
+            $power = $dotPos - $digitPos;
+        }
+
         $base = bcpow(10, abs($power));
-
-        var_dump("input=$this->value, dot=$dotPos digit=$digitPos power=$power");
 
         if ($power > 0) {
             $number = bcdiv($this->value, $base, $this->scale);
-        } else {
+        } elseif ($power < 0) {
             $number = bcmul($this->value, $base, $this->scale);
+        } else {
+            $number = $this->value;
+        }
+
+        // Strip trailing zeros after decimal point
+        if (strpos($number, '.') !== false) {
+            $number = rtrim(rtrim($number, '0'), '.');
         }
 
         return $number . $exponent . $power;
