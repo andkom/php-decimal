@@ -63,10 +63,37 @@ class Decimal implements DecimalInterface
 
         // scientific notation
         if (strpos($value, 'e') !== false) {
-            list($man, $exp) = explode('e', $value);
-            @list(, $dec) = explode('.', $man);
-            $oldScale = abs($exp - strlen($dec));
-            $value = bcmul($man, bcpow(10, $exp, $oldScale), $scale);
+            list($man, $expStr) = explode('e', $value);
+            $exp = (int)$expStr;
+
+            $sign = '';
+            if ($man[0] === '-' || $man[0] === '+') {
+                $sign = $man[0] === '-' ? '-' : '';
+                $man = substr($man, 1);
+            }
+
+            $parts = explode('.', $man);
+            $intPart = $parts[0];
+            $fracPart = isset($parts[1]) ? $parts[1] : '';
+            $digits = $intPart . $fracPart;
+            $dotPos = strlen($intPart) + $exp;
+
+            if ($dotPos >= strlen($digits)) {
+                $value = $sign . $digits . str_repeat('0', $dotPos - strlen($digits));
+            } elseif ($dotPos <= 0) {
+                $value = $sign . '0.' . str_repeat('0', -$dotPos) . $digits;
+            } else {
+                $value = $sign . substr($digits, 0, $dotPos) . '.' . substr($digits, $dotPos);
+            }
+
+            if (strpos($value, '.') !== false) {
+                $value = rtrim(rtrim($value, '0'), '.');
+            }
+
+            if ($scale === null) {
+                $resultParts = explode('.', $value);
+                $scale = isset($resultParts[1]) ? strlen($resultParts[1]) : 0;
+            }
         }
 
         return new static($value, $scale);
