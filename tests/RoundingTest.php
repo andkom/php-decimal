@@ -88,8 +88,10 @@ class RoundingTest extends \PHPUnit\Framework\TestCase
         $this->assertSame((new Decimal('123'))->roundUp(-2)->getValue(), '200');
 
         $this->assertSame((new Decimal('-1.1', 1))->roundUp(1)->getValue(), '-1.1');
-        $this->assertSame((new Decimal('-1.1', 1))->roundUp()->getValue(), '-1');
-        $this->assertSame((new Decimal('-123'))->roundUp(-2)->getValue(), '-100');
+        $this->assertSame((new Decimal('-1.1', 1))->roundUp()->getValue(), '-2');
+        $this->assertSame((new Decimal('-1.0', 1))->roundUp()->getValue(), '-1');
+        $this->assertSame((new Decimal('-123'))->roundUp(-2)->getValue(), '-200');
+        $this->assertSame((new Decimal('-100'))->roundUp(-2)->getValue(), '-100');
     }
 
     public function testRoundDown()

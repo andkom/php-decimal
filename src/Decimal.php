@@ -298,9 +298,13 @@ class Decimal implements DecimalInterface
             return $truncated;
         }
 
-        if ($original->isGreaterThan($truncated)) {
+        if ($original->isNotEqual($truncated)) {
             $increment = self::incrementAtPrecision($precision);
-            $truncated = $truncated->add($increment);
+            if ($original->isNegative()) {
+                $truncated = $truncated->subtract($increment);
+            } else {
+                $truncated = $truncated->add($increment);
+            }
         }
 
         return $truncated;
@@ -382,7 +386,15 @@ class Decimal implements DecimalInterface
 
     public function ceil(int $precision = 0): DecimalInterface
     {
-        return $this->roundUp($precision);
+        $original = $this->toDecimal();
+        $truncated = $this->truncate($precision);
+
+        if ($original->isGreaterThan($truncated)) {
+            $increment = self::incrementAtPrecision($precision);
+            $truncated = $truncated->add($increment);
+        }
+
+        return $truncated;
     }
 
     public function inverse(): DecimalInterface
