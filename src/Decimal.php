@@ -42,7 +42,13 @@ class Decimal implements DecimalInterface
 
     public static function createFromFloat(float $value, int $scale = null): DecimalInterface
     {
-        $value = number_format($value, $scale, '.', '');
+        if ($scale !== null) {
+            $value = number_format($value, $scale, '.', '');
+        } else {
+            $value = rtrim(rtrim(number_format($value, 14, '.', ''), '0'), '.');
+            $parts = explode('.', $value);
+            $scale = isset($parts[1]) ? strlen($parts[1]) : 0;
+        }
 
         return new static($value, $scale);
     }

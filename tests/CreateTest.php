@@ -34,6 +34,23 @@ class CreateTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(Decimal::createFromString('1E-300')->getValue(), '0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001');
     }
 
+    public function testCreateFromFloat()
+    {
+        // without explicit scale — derives scale from float's natural precision
+        $this->assertSame(Decimal::createFromFloat(1.5)->getValue(), '1.5');
+        $this->assertSame(Decimal::createFromFloat(0.0)->getValue(), '0');
+        $this->assertSame(Decimal::createFromFloat(-1.5)->getValue(), '-1.5');
+        $this->assertSame(Decimal::createFromFloat(1.0)->getValue(), '1');
+        $this->assertSame(Decimal::createFromFloat(0.123)->getValue(), '0.123');
+        $this->assertSame(Decimal::createFromFloat(100.0)->getValue(), '100');
+
+        // with explicit scale
+        $this->assertSame(Decimal::createFromFloat(1.5, 3)->getValue(), '1.500');
+        $this->assertSame(Decimal::createFromFloat(1.5, 0)->getValue(), '2');
+        $this->assertSame(Decimal::createFromFloat(0.0, 2)->getValue(), '0.00');
+        $this->assertSame(Decimal::createFromFloat(-1.5, 1)->getValue(), '-1.5');
+    }
+
     public function testInvalidNumber()
     {
         $this->expectException(\InvalidArgumentException::class);
