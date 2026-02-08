@@ -60,6 +60,10 @@ class Decimal implements DecimalInterface
 
     public static function createFromString(string $value, int $scale = null): DecimalInterface
     {
+        if (!$value) {
+            $value = '0';
+        }
+
         $value = strtolower($value);
 
         // check format
@@ -188,6 +192,10 @@ class Decimal implements DecimalInterface
 
     public function setValue(string $value = null): DecimalInterface
     {
+        if (!$value) {
+            $value = '0';
+        }
+
         if (!preg_match(static::RE_NUMBER, $value)) {
             throw new \InvalidArgumentException("Invalid number: $value.");
         }

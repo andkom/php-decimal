@@ -4,8 +4,8 @@ namespace AndKom;
 
 interface DecimalInterface
 {
-    const RE_NUMBER = '/^[+-]?\d*(\.\d+)?$/';
-    const RE_NUMBER_EXP = '/^[+-]?\d*(\.\d+)?(e[\+\-]?\d+)?$/';
+    const RE_NUMBER = '/^[+-]?\d+(\.\d+)?$/';
+    const RE_NUMBER_EXP = '/^[+-]?\d+(\.\d+)?(e[\+\-]?\d+)?$/';
 
     const ROUND_UP = 1;
     const ROUND_DOWN = 2;
