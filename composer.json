@@ -2,9 +2,14 @@
     "require-dev": {
         "phpunit/phpunit": "^6.4"
     },
-    "autoload-dev": {
+    "autoload": {
         "psr-4": {
             "AndKom\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AndKom\\Tests\\": "tests/"
         }
     }
 }
